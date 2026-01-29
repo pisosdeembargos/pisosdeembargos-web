@@ -1,0 +1,1057 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Capital Select - Viviendas de Embargo y Lujo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'dark-blue': '#0a192f',
+                        'mid-blue': '#112240',
+                        'gold': '#ffd700',
+                        'light-gold': '#e6c35c'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Playfair+Display:wght@700;800&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: #0a192f;
+            color: white;
+            overflow-x: hidden;
+        }
+        
+        h1, h2, h3, h4 {
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+        }
+        
+        .hero-section {
+            background: linear-gradient(rgba(10, 25, 47, 0.85), rgba(10, 25, 47, 0.9)), url('https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1740&q=80');
+            background-size: cover;
+            background-position: center;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+        }
+        
+        .hero-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(17,34,64,0.9) 0%, rgba(10,25,47,0.95) 100%);
+        }
+        
+        .property-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.5);
+        }
+        
+        .property-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(rgba(17, 34, 64, 0.7), rgba(10, 25, 47, 0.9));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 1;
+        }
+        
+        .property-card:hover::before {
+            opacity: 1;
+        }
+        
+        .lock-icon {
+            width: 24px;
+            height: 24px;
+            fill: currentColor;
+        }
+        
+        .section-title {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 2rem;
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 70px;
+            height: 3px;
+            background: #ffd700;
+            border-radius: 3px;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.85);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: #112240;
+            border: 2px solid #ffd700;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            padding: 2.5rem;
+            position: relative;
+            animation: modalOpen 0.4s ease-out;
+        }
+        
+        @keyframes modalOpen {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 1.5rem;
+            color: #ffd700;
+            background: none;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        
+        .close-modal:hover {
+            transform: rotate(90deg);
+        }
+        
+        .payment-success {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .payment-success i {
+            font-size: 4rem;
+            color: #22c55e;
+            margin-bottom: 1rem;
+        }
+        
+        .luxury-bg {
+            background: linear-gradient(rgba(10, 25, 47, 0.85), rgba(10, 25, 47, 0.9)), url('https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1740&q=80');
+            background-size: cover;
+            background-position: center;
+        }
+        
+        .embargo-bg {
+            background: linear-gradient(rgba(10, 25, 47, 0.85), rgba(10, 25, 47, 0.9)), url('https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1740&q=80');
+            background-size: cover;
+            background-position: center;
+        }
+        
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .logo-text {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: linear-gradient(to right, #ffd700, #e6c35c);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: 1px;
+        }
+        
+        .nav-link {
+            position: relative;
+            padding: 5px 0;
+            margin: 0 10px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: #ffd700;
+            transition: width 0.3s ease;
+        }
+        
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        
+        .nav-link:hover {
+            color: #ffd700;
+        }
+        
+        .property-image {
+            height: 200px;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+        
+        .property-card:hover .property-image {
+            transform: scale(1.05);
+        }
+        
+        .gold-button {
+            background: linear-gradient(to right, #ffd700, #e6c35c);
+            color: #0a192f;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .gold-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4);
+        }
+        
+        .gold-button::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: rotate(30deg);
+            transition: all 0.6s;
+            opacity: 0;
+        }
+        
+        .gold-button:hover::after {
+            opacity: 1;
+            left: 100%;
+        }
+        
+        .section-divider {
+            height: 1px;
+            background: linear-gradient(to right, transparent, #ffd700, transparent);
+            margin: 4rem 0;
+        }
+        
+        .footer-bg {
+            background: linear-gradient(to bottom, #0c1e36, #0a192f);
+        }
+        
+        @media (max-width: 768px) {
+            .hero-section {
+                height: auto;
+                min-height: 100vh;
+                padding: 4rem 1.5rem;
+            }
+            
+            .grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)) !important;
+            }
+            
+            .logo-text {
+                font-size: 1.5rem;
+            }
+            
+            .nav-links {
+                display: none;
+            }
+            
+            .mobile-menu-button {
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="py-4 px-6 md:px-12 fixed w-full z-50 bg-dark-blue/90 backdrop-blur-sm border-b border-gold/20">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="logo-container">
+                <div class="bg-gradient-to-r from-gold to-light-gold text-dark-blue font-bold text-xl px-3 py-1 rounded-lg shadow-lg">
+                    CAPITAL SELECT
+                </div>
+            </div>
+            <nav class="hidden md:block">
+                <ul class="flex space-x-8">
+                    <li><a href="#inicio" class="nav-link">Inicio</a></li>
+                    <li><a href="#embargo" class="nav-link">Viviendas de Embargo</a></li>
+                    <li><a href="#lujo" class="nav-link">Viviendas de Lujo</a></li>
+                    <li><a href="#nosotros" class="nav-link">Sobre Nosotros</a></li>
+                    <li><a href="#contacto" class="nav-link">Contacto</a></li>
+                </ul>
+            </nav>
+            <button class="md:hidden text-gold text-2xl">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section id="inicio" class="hero-section">
+        <div class="hero-overlay"></div>
+        <div class="container mx-auto px-4 text-center relative z-10 max-w-4xl">
+            <h1 class="text-5xl md:text-6xl font-bold mb-6">Oportunidades Únicas en Bienes Raíces</h1>
+            <p class="text-xl md:text-2xl mb-10 text-gray-300">Accede a propiedades de embargo y lujo </p>
+            <div class="flex flex-col sm:flex-row justify-center gap-4">
+                <a href="#embargo" class="gold-button px-8 py-4 rounded-full text-lg font-bold shadow-lg hover:shadow-xl transition-all">
+                    Viviendas de Embargo
+                </a>
+                <a href="#lujo" class="bg-mid-blue hover:bg-opacity-80 px-8 py-4 rounded-full text-lg font-bold shadow-lg transition-all border border-gold">
+                    Viviendas de Lujo
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Viviendas de Embargo Section -->
+    <section id="embargo" class="py-20 px-4 md:px-8 bg-mid-blue embargo-bg">
+        <div class="container mx-auto max-w-7xl">
+            <h2 class="section-title text-4xl font-bold text-center text-gold mb-4">Viviendas de Embargo</h2>
+            <p class="text-center text-xl text-gray-300 max-w-3xl mx-auto mb-16">
+                Propiedades exclusivas con grandes descuentos. Desbloquea la información con un pago de €10,90
+            </p>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                <!-- Property 1 -->
+                <div class="property-card bg-mid-blue rounded-xl overflow-hidden relative shadow-lg border border-gold/10">
+                    <img src="img/pisos/novelda-01/01.jpg" alt="Novelda" class="property-image w-full">
+                    <div class="p-6">
+                        <h3 class="text-2xl font-bold mb-2">Novelda</h3>
+                        <p class="text-2xl text-gold font-bold mb-4">28.500 €</p>
+                        <button onclick="openPaymentModal('Novelda', '28.500 €', 'Embargo')" class="gold-button w-full py-3 rounded-lg flex items-center justify-center space-x-2">
+                            <svg class="lock-icon" viewBox="0 0 20 20">
+                                <path d="M10 2a5 5 0 00-5 5v2a2 2 0 00-2 2v5a2 2 0 002 2h10a2 2 0 002-2v-5a2 2 0 00-2-2V7a5 5 0 00-5-5zM7 8a3 3 0 016 0v5a3 3 0 01-6 0V8z" />
+                            </svg>
+                            <span>Desbloquear por €10,90</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Property 2 -->
+                <div class="property-card bg-mid-blue rounded-xl overflow-hidden relative shadow-lg border border-gold/10">
+                    <img src="img/pisos/alguazas-01/01.jpg" alt="alguazas" class="property-image w-full">
+                    <div class="p-6">
+                        <h3 class="text-2xl font-bold mb-2">alguazas</h3>
+                        <p class="text-2xl text-gold font-bold mb-4">9.500 €</p>
+                        <button onclick="openPaymentModal('alguazas', '9.500 €', 'Embargo')" class="gold-button w-full py-3 rounded-lg flex items-center justify-center space-x-2">
+                            <svg class="lock-icon" viewBox="0 0 20 20">
+                                <path d="M10 2a5 5 0 00-5 5v2a2 2 0 00-2 2v5a2 2 0 002 2h10a2 2 0 002-2v-5a2 2 0 00-2-2V7a5 5 0 00-5-5zM7 8a3 3 0 016 0v5a3 3 0 01-6 0V8z" />
+                            </svg>
+                            <span>Desbloquear por €10,90</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Property 3 -->
+                <div class="property-card bg-mid-blue rounded-xl overflow-hidden relative shadow-lg border border-gold/10">
+                    <img src="img/pisos/crevillent-01/01.jpg" alt="Crevillent" class="property-image w-full">
+                    <div class="p-6">
+                        <h3 class="text-2xl font-bold mb-2">Crevillent</h3>
+                        <p class="text-2xl text-gold font-bold mb-4">16.000 €</p>
+                        <button onclick="openPaymentModal('Crevillent', '16.000 €', 'Embargo')" class="gold-button w-full py-3 rounded-lg flex items-center justify-center space-x-2">
+                            <svg class="lock-icon" viewBox="0 0 20 20">
+                                <path d="M10 2a5 5 0 00-5 5v2a2 2 0 00-2 2v5a2 2 0 002 2h10a2 2 0 002-2v-5a2 2 0 00-2-2V7a5 5 0 00-5-5zM7 8a3 3 0 016 0v5a3 3 0 01-6 0V8z" />
+                            </svg>
+                            <span>Desbloquear por €10,90</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Property 4 -->
+                <div class="property-card bg-mid-blue rounded-xl overflow-hidden relative shadow-lg border border-gold/10">
+                    <img src="img/pisos/abaran-01/01.jpg" alt="Abaran" class="property-image w-full">
+                    <div class="p-6">
+                        <h3 class="text-2xl font-bold mb-2">Abaran</h3>
+                        <p class="text-2xl text-gold font-bold mb-4">17.000 €</p>
+                        <button onclick="openPaymentModal('Abaran', '17.000 €', 'Embargo')" class="gold-button w-full py-3 rounded-lg flex items-center justify-center space-x-2">
+                            <svg class="lock-icon" viewBox="0 0 20 20">
+                                <path d="M10 2a5 5 0 00-5 5v2a2 2 0 00-2 2v5a2 2 0 002 2h10a2 2 0 002-2v-5a2 2 0 00-2-2V7a5 5 0 00-5-5zM7 8a3 3 0 016 0v5a3 3 0 01-6 0V8z" />
+                            </svg>
+                            <span>Desbloquear por €10,90</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Property 5 -->
+                <div class="property-card bg-mid-blue rounded-xl overflow-hidden relative shadow-lg border border-gold/10">
+                    <img src="img/pisos/almansa-01/01.jpg" alt="Almansa" class="property-image w-full">
+                    <div class="p-6">
+                        <h3 class="text-2xl font-bold mb-2">Almansa</h3>
+                        <p class="text-2xl text-gold font-bold mb-4">17.800 €</p>
+                        <button onclick="openPaymentModal('Almansa', '17.800 €', 'Embargo')" class="gold-button w-full py-3 rounded-lg flex items-center justify-center space-x-2">
+                            <svg class="lock-icon" viewBox="0 0 20 20">
+                                <path d="M10 2a5 5 0 00-5 5v2a2 2 0 00-2 2v5a2 2 0 002 2h10a2 2 0 002-2v-5a2 2 0 00-2-2V7a5 5 0 00-5-5zM7 8a3 3 0 016 0v5a3 3 0 01-6 0V8z" />
+                            </svg>
+                            <span>Desbloquear por €10,90</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Property 6 -->
+                <div class="property-card bg-mid-blue rounded-xl overflow-hidden relative shadow-lg border border-gold/10">
+                    <img src="img/pisos/santomera-01/01.jpg" alt="Santomera" class="property-image w-full">
+                    <div class="p-6">
+                        <h3 class="text-2xl font-bold mb-2">Santomera</h3>
+                        <p class="text-2xl text-gold font-bold mb-4">18.400 €</p>
+                        <button onclick="openPaymentModal('Santomera', '18.400 €', 'Embargo')" class="gold-button w-full py-3 rounded-lg flex items-center justify-center space-x-2">
+                            <svg class="lock-icon" viewBox="0 0 20 20">
+                                <path d="M10 2a5 5 0 00-5 5v2a2 2 0 00-2 2v5a2 2 0 002 2h10a2 2 0 002-2v-5a2 2 0 00-2-2V7a5 5 0 00-5-5zM7 8a3 3 0 016 0v5a3 3 0 01-6 0V8z" />
+                            </svg>
+                            <span>Desbloquear por €10,90</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Property 7 -->
+                <div class="property-card bg-mid-blue rounded-xl overflow-hidden relative shadow-lg border border-gold/10">
+                    <img src="img/pisos/crevillent-02/01.jpg" alt="Crevillent" class="property-image w-full">
+                    <div class="p-6">
+                        <h3 class="text-2xl font-bold mb-2">Crevillent</h3>
+                        <p class="text-2xl text-gold font-bold mb-4">19.000 €</p>
+                        <button onclick="openPaymentModal('Crevillent', '19.000 €', 'Embargo')" class="gold-button w-full py-3 rounded-lg flex items-center justify-center space-x-2">
+                            <svg class="lock-icon" viewBox="0 0 20 20">
+                                <path d="M10 2a5 5 0 00-5 5v2a2 2 0 00-2 2v5a2 2 0 002 2h10a2 2 0 002-2v-5a2 2 0 00-2-2V7a5 5 0 00-5-5zM7 8a3 3 0 016 0v5a3 3 0 01-6 0V8z" />
+                            </svg>
+                            <span>Desbloquear por €10,90</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Property 8 -->
+                <div class="property-card bg-mid-blue rounded-xl overflow-hidden relative shadow-lg border border-gold/10">
+                    <img src="img/pisos/palencia-01/01.jpg" alt="Santibáñez" class="property-image w-full">
+                    <div class="p-6">
+                        <h3 class="text-2xl font-bold mb-2">Santibáñez (Palencia)</h3>
+                        <p class="text-2xl text-gold font-bold mb-4">19.000 €</p>
+                        <button onclick="openPaymentModal('Santibáñez (Palencia)', '19.000 €', 'Embargo')" class="gold-button w-full py-3 rounded-lg flex items-center justify-center space-x-2">
+                            <svg class="lock-icon" viewBox="0 0 20 20">
+                                <path d="M10 2a5 5 0 00-5 5v2a2 2 0 00-2 2v5a2 2 0 002 2h10a2 2 0 002-2v-5a2 2 0 00-2-2V7a5 5 0 00-5-5zM7 8a3 3 0 016 0v5a3 3 0 01-6 0V8z" />
+                            </svg>
+                            <span>Desbloquear por €10,90</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Property 9 -->
+                <div class="property-card bg-mid-blue rounded-xl overflow-hidden relative shadow-lg border border-gold/10">
+                    <img src="img/pisos/elda-01/01.jpg" alt="Elda" class="property-image w-full">
+                    <div class="p-6">
+                        <h3 class="text-2xl font-bold mb-2">Elda</h3>
+                        <p class="text-2xl text-gold font-bold mb-4">19.000 €</p>
+                        <button onclick="openPaymentModal('Elda', '19.000 €', 'Embargo')" class="gold-button w-full py-3 rounded-lg flex items-center justify-center space-x-2">
+                            <svg class="lock-icon" viewBox="0 0 20 20">
+                                <path d="M10 2a5 5 0 00-5 5v2a2 2 0 00-2 2v5a2 2 0 002 2h10a2 2 0 002-2v-5a2 2 0 00-2-2V7a5 5 0 00-5-5zM7 8a3 3 0 016 0v5a3 3 0 01-6 0V8z" />
+                            </svg>
+                            <span>Desbloquear por €10,90</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Property 10 -->
+                <div class="property-card bg-mid-blue rounded-xl overflow-hidden relative shadow-lg border border-gold/10">
+                    <img src="img/pisos/palmar-01/01.jpg" alt="El Palmar" class="property-image w-full">
+                    <div class="p-6">
+                        <h3 class="text-2xl font-bold mb-2">El Palmar (Murcia)</h3>
+                        <p class="text-2xl text-gold font-bold mb-4">20.000 €</p>
+                        <button onclick="openPaymentModal('El Palmar (Murcia)', '20.000 €', 'Embargo')" class="gold-button w-full py-3 rounded-lg flex items-center justify-center space-x-2">
+                            <svg class="lock-icon" viewBox="0 0 20 20">
+                                <path d="M10 2a5 5 0 00-5 5v2a2 2 0 00-2 2v5a2 2 0 002 2h10a2 2 0 002-2v-5a2 2 0 00-2-2V7a5 5 0 00-5-5zM7 8a3 3 0 016 0v5a3 3 0 01-6 0V8z" />
+                            </svg>
+                            <span>Desbloquear por €10,90</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Property 11 -->
+                <div class="property-card bg-mid-blue rounded-xl overflow-hidden relative shadow-lg border border-gold/10">
+                    <img src="img/pisos/cartagena-01/01.jpg" alt="Cartagena" class="property-image w-full">
+                    <div class="p-6">
+                        <h3 class="text-2xl font-bold mb-2">Cartagena</h3>
+                        <p class="text-2xl text-gold font-bold mb-4">22.000 €</p>
+                        <button onclick="openPaymentModal('Cartagena', '22.000 €', 'Embargo')" class="gold-button w-full py-3 rounded-lg flex items-center justify-center space-x-2">
+                            <svg class="lock-icon" viewBox="0 0 20 20">
+                                <path d="M10 2a5 5 0 00-5 5v2a2 2 0 00-2 2v5a2 2 0 002 2h10a2 2 0 002-2v-5a2 2 0 00-2-2V7a5 5 0 00-5-5zM7 8a3 3 0 016 0v5a3 3 0 01-6 0V8z" />
+                            </svg>
+                            <span>Desbloquear por €10,90</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Property 12 -->
+                <div class="property-card bg-mid-blue rounded-xl overflow-hidden relative shadow-lg border border-gold/10">
+                    <img src="img/pisos/elda-02/01.jpg" alt="Elda" class="property-image w-full">
+                    <div class="p-6">
+                        <h3 class="text-2xl font-bold mb-2">Elda</h3>
+                        <p class="text-2xl text-gold font-bold mb-4">24.000 €</p>
+                        <button onclick="openPaymentModal('Elda', '24.000 €', 'Embargo')" class="gold-button w-full py-3 rounded-lg flex items-center justify-center space-x-2">
+                            <svg class="lock-icon" viewBox="0 0 20 20">
+                                <path d="M10 2a5 5 0 00-5 5v2a2 2 0 00-2 2v5a2 2 0 002 2h10a2 2 0 002-2v-5a2 2 0 00-2-2V7a5 5 0 00-5-5zM7 8a3 3 0 016 0v5a3 3 0 01-6 0V8z" />
+                            </svg>
+                            <span>Desbloquear por €10,90</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Property 13 -->
+                <div class="property-card bg-mid-blue rounded-xl overflow-hidden relative shadow-lg border border-gold/10">
+                    <img src="img/pisos/alguazas-02/01.jpg" alt="alguazas" class="property-image w-full">
+                    <div class="p-6">
+                        <h3 class="text-2xl font-bold mb-2">Alguazas</h3>
+                        <p class="text-2xl text-gold font-bold mb-4">24.900 €</p>
+                        <button onclick="openPaymentModal('Alguazas', '24.900 €', 'Embargo')" class="gold-button w-full py-3 rounded-lg flex items-center justify-center space-x-2">
+                            <svg class="lock-icon" viewBox="0 0 20 20">
+                                <path d="M10 2a5 5 0 00-5 5v2a2 2 0 00-2 2v5a2 2 0 002 2h10a2 2 0 002-2v-5a2 2 0 00-2-2V7a5 5 0 00-5-5zM7 8a3 3 0 016 0v5a3 3 0 01-6 0V8z" />
+                            </svg>
+                            <span>Desbloquear por €10,90</span>
+                        </button>
+                    </div>
+                </div>
+ <!-- Property 14 -->
+<div class="property-card bg-mid-blue rounded-xl overflow-hidden relative shadow-lg border border-gold/10">
+    
+    <img src="img/pisos/girona-01/01.jpg" alt="Girona" class="property-image w-full">
+
+    <div class="p-6">
+        <h3 class="text-2xl font-bold mb-2">Girona</h3>
+        <p class="text-2xl text-gold font-bold mb-4">36.000 €</p>
+
+        <a href="https://buy.stripe.com/test_9B614nd2peK49vL4qI4sE02"
+           target="_blank"
+           class="gold-button w-full py-3 rounded-lg flex items-center justify-center space-x-2">
+
+            <svg class="lock-icon" viewBox="0 0 20 20">
+                <path d="M10 2a5 5 0 00-5 5v2a2 2 0 00-2 2v5a2 2 0 002 2h10a2 2 0 002-2v-5a2 2 0 00-2-2V7a5 5 0 00-5-5zM7 8a3 3 0 016 0v5a3 3 0 01-6 0V8z" />
+            </svg>
+
+            <span>Desbloquear por €10,90</span>
+        </a>
+    </div>
+</div>
+      <!-- Property 15 -->
+<div class="property-card bg-mid-blue rounded-xl overflow-hidden relative shadow-lg border border-gold/10">
+    <img src="img/pisos/girona02/01.jpg" alt="Girona" class="property-image w-full">
+    <div class="p-6">
+        <h3 class="text-2xl font-bold mb-2">Girona</h3>
+        <p class="text-2xl text-gold font-bold mb-4">36.000 €</p>
+        <a href="https://buy.stripe.com/test_9B614nd2peK49vL4qI4sE02" target="_blank"
+           class="gold-button w-full py-3 rounded-lg flex items-center justify-center space-x-2">
+            <svg class="lock-icon" viewBox="0 0 20 20"><path d="M10 2a5 5 0 00-5 5v2a2 2 0 00-2 2v5a2 2 0 002 2h10a2 2 0 002-2v-5a2 2 0 00-2-2V7a5 5 0 00-5-5z"/></svg>
+            <span>Desbloquear por €10,90</span>
+        </a>
+    </div>
+</div>
+<!-- Property 16 --> 
+<div class="property-card bg-mid-blue rounded-xl overflow-hidden relative shadow-lg border border-gold/10">
+    <img src="img/pisos/girona03/01.jpg" alt="Girona" class="property-image w-full">
+    <div class="p-6">
+        <h3 class="text-2xl font-bold mb-2">Girona</h3>
+        <p class="text-2xl text-gold font-bold mb-4">25.000 €</p>
+        <a href="https://buy.stripe.com/test_9B614nd2peK49vL4qI4sE02" target="_blank" class="gold-button w-full py-3 rounded-lg flex items-center justify-center space-x-2">
+            <svg class="lock-icon" viewBox="0 0 20 20"><path d="M10 2a5 5 0 00-5 5v2a2 2 0 00-2 2v5a2 2 0 002 2h10a2 2 0 002-2v-5a2 2 0 00-2-2V7a5 5 0 00-5-5z"/></svg>
+            <span>Desbloquear por €10,90</span>
+        </a>
+    </div>
+</div>
+<!-- Property 17 --> 
+<div class="property-card bg-mid-blue rounded-xl overflow-hidden relative shadow-lg border border-gold/10">
+    <img src="img/pisos/girona04/01.jpg" alt="Girona" class="property-image w-full">
+    <div class="p-6">
+        <h3 class="text-2xl font-bold mb-2">Girona</h3>
+        <p class="text-2xl text-gold font-bold mb-4">20.000 €</p>
+        <a href="https://buy.stripe.com/test_9B614nd2peK49vL4qI4sE02" target="_blank" class="gold-button w-full py-3 rounded-lg flex items-center justify-center space-x-2">
+            <svg class="lock-icon" viewBox="0 0 20 20"><path d="M10 2a5 5 0 00-5 5v2a2 2 0 00-2 2v5a2 2 0 002 2h10a2 2 0 002-2v-5a2 2 0 00-2-2V7a5 5 0 00-5-5z"/></svg>
+            <span>Desbloquear por €10,90</span>
+        </a>
+    </div>
+</div>
+<!-- Property 18 --> 
+<div class="property-card bg-mid-blue rounded-xl overflow-hidden relative shadow-lg border border-gold/10">
+    <img src="img/pisos/suria01/01.jpg" alt="Súria" class="property-image w-full">
+    <div class="p-6">
+        <h3 class="text-2xl font-bold mb-2">Súria</h3>
+        <p class="text-2xl text-gold font-bold mb-4">9.000 €</p>
+        <a href="https://buy.stripe.com/test_9B614nd2peK49vL4qI4sE02" target="_blank" class="gold-button w-full py-3 rounded-lg flex items-center justify-center space-x-2">
+            <svg class="lock-icon" viewBox="0 0 20 20"><path d="M10 2a5 5 0 00-5 5v2a2 2 0 00-2 2v5a2 2 0 002 2h10a2 2 0 002-2v-5a2 2 0 00-2-2V7a5 5 0 00-5-5z"/></svg>
+            <span>Desbloquear por €10,90</span>
+        </a>
+    </div>
+</div>
+<!-- Property 19 --> 
+<div class="property-card bg-mid-blue rounded-xl overflow-hidden relative shadow-lg border border-gold/10">
+    <img src="img/pisos/terrassa01/01.jpg" alt="Terrassa" class="property-image w-full">
+    <div class="p-6">
+        <h3 class="text-2xl font-bold mb-2">Terrassa</h3>
+        <p class="text-2xl text-gold font-bold mb-4">27.000 €</p>
+        <a href="https://buy.stripe.com/test_9B614nd2peK49vL4qI4sE02" target="_blank" class="gold-button w-full py-3 rounded-lg flex items-center justify-center space-x-2">
+            <svg class="lock-icon" viewBox="0 0 20 20"><path d="M10 2a5 5 0 00-5 5v2a2 2 0 00-2 2v5a2 2 0 002 2h10a2 2 0 002-2v-5a2 2 0 00-2-2V7a5 5 0 00-5-5z"/></svg>
+            <span>Desbloquear por €10,90</span>
+        </a>
+    </div>
+</div>
+<!-- Property 20 --> 
+<div class="property-card bg-mid-blue rounded-xl overflow-hidden relative shadow-lg border border-gold/10">
+    <img src="img/pisos/villena01/01.jpg" alt="Villena" class="property-image w-full">
+    <div class="p-6">
+        <h3 class="text-2xl font-bold mb-2">Villena</h3>
+        <p class="text-2xl text-gold font-bold mb-4">7.000 €</p>
+        <a href="https://buy.stripe.com/test_9B614nd2peK49vL4qI4sE02" target="_blank" class="gold-button w-full py-3 rounded-lg flex items-center justify-center space-x-2">
+            <svg class="lock-icon" viewBox="0 0 20 20"><path d="M10 2a5 5 0 00-5 5v2a2 2 0 00-2 2v5a2 2 0 002 2h10a2 2 0 002-2v-5a2 2 0 00-2-2V7a5 5 0 00-5-5z"/></svg>
+            <span>Desbloquear por €10,90</span>
+        </a>
+    </div>
+</div>
+<!-- Property 21 --> 
+<div class="property-card bg-mid-blue rounded-xl overflow-hidden relative shadow-lg border border-gold/10">
+    <img src="img/pisos/elda03/01.jpg" alt="Elda" class="property-image w-full">
+    <div class="p-6">
+        <h3 class="text-2xl font-bold mb-2">Elda</h3>
+        <p class="text-2xl text-gold font-bold mb-4">22.000 €</p>
+        <a href="https://buy.stripe.com/test_9B614nd2peK49vL4qI4sE02" target="_blank" class="gold-button w-full py-3 rounded-lg flex items-center justify-center space-x-2">
+            <svg class="lock-icon" viewBox="0 0 20 20"><path d="M10 2a5 5 0 00-5 5v2a2 2 0 00-2 2v5a2 2 0 002 2h10a2 2 0 002-2v-5a2 2 0 00-2-2V7a5 5 0 00-5-5z"/></svg>
+            <span>Desbloquear por €10,90</span>
+        </a>
+    </div>
+</div>
+
+          
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- Viviendas de Lujo Section -->
+    <section id="lujo" class="py-20 px-4 md:px-8 bg-mid-blue luxury-bg">
+        <div class="container mx-auto max-w-7xl">
+            <h2 class="section-title text-4xl font-bold text-center text-gold mb-4">Viviendas de Lujo</h2>
+            <p class="text-center text-xl text-gray-300 max-w-3xl mx-auto mb-16">
+                Propiedades exclusivas en las mejores ubicaciones. Desbloquea la información con un pago de €10,90
+            </p>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                <!-- Luxury Property 1 -->
+                <div class="property-card bg-mid-blue rounded-xl overflow-hidden relative shadow-lg border border-gold/10">
+                    <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80" alt="Marbella" class="property-image w-full">
+                    <div class="p-6">
+                        <h3 class="text-2xl font-bold mb-2">Marbella</h3>
+                        <p class="text-2xl text-gold font-bold mb-4">2.500.000 €</p>
+                        <button onclick="openPaymentModal('Marbella', '2.500.000 €', 'Lujo')" class="gold-button w-full py-3 rounded-lg flex items-center justify-center space-x-2">
+                            <svg class="lock-icon" viewBox="0 0 20 20">
+                                <path d="M10 2a5 5 0 00-5 5v2a2 2 0 00-2 2v5a2 2 0 002 2h10a2 2 0 002-2v-5a2 2 0 00-2-2V7a5 5 0 00-5-5zM7 8a3 3 0 016 0v5a3 3 0 01-6 0V8z" />
+                            </svg>
+                            <span>Desbloquear por €10,90</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Luxury Property 2 -->
+                <div class="property-card bg-mid-blue rounded-xl overflow-hidden relative shadow-lg border border-gold/10">
+                    <img src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80" alt="Ibiza" class="property-image w-full">
+                    <div class="p-6">
+                        <h3 class="text-2xl font-bold mb-2">Ibiza</h3>
+                        <p class="text-2xl text-gold font-bold mb-4">1.800.000 €</p>
+                        <button onclick="openPaymentModal('Ibiza', '1.800.000 €', 'Lujo')" class="gold-button w-full py-3 rounded-lg flex items-center justify-center space-x-2">
+                            <svg class="lock-icon" viewBox="0 0 20 20">
+                                <path d="M10 2a5 5 0 00-5 5v2a2 2 0 00-2 2v5a2 2 0 002 2h10a2 2 0 002-2v-5a2 2 0 00-2-2V7a5 5 0 00-5-5zM7 8a3 3 0 016 0v5a3 3 0 01-6 0V8z" />
+                            </svg>
+                            <span>Desbloquear por €10,90</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Luxury Property 3 -->
+                <div class="property-card bg-mid-blue rounded-xl overflow-hidden relative shadow-lg border border-gold/10">
+                    <img src="https://images.unsplash.com/photo-1580587771525-78b9dba3b914?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80" alt="Madrid" class="property-image w-full">
+                    <div class="p-6">
+                        <h3 class="text-2xl font-bold mb-2">Madrid</h3>
+                        <p class="text-2xl text-gold font-bold mb-4">3.200.000 €</p>
+                        <button onclick="openPaymentModal('Madrid', '3.200.000 €', 'Lujo')" class="gold-button w-full py-3 rounded-lg flex items-center justify-center space-x-2">
+                            <svg class="lock-icon" viewBox="0 0 20 20">
+                                <path d="M10 2a5 5 0 00-5 5v2a2 2 0 00-2 2v5a2 2 0 002 2h10a2 2 0 002-2v-5a2 2 0 00-2-2V7a5 5 0 00-5-5zM7 8a3 3 0 016 0v5a3 3 0 01-6 0V8z" />
+                            </svg>
+                            <span>Desbloquear por €10,90</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Luxury Property 4 -->
+                <div class="property-card bg-mid-blue rounded-xl overflow-hidden relative shadow-lg border border-gold/10">
+                    <img src="https://images.unsplash.com/photo-1560518883879-9d11c7d9f5c7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80" alt="Barcelona" class="property-image w-full">
+                    <div class="p-6">
+                        <h3 class="text-2xl font-bold mb-2">Barcelona</h3>
+                        <p class="text-2xl text-gold font-bold mb-4">2.900.000 €</p>
+                        <button onclick="openPaymentModal('Barcelona', '2.900.000 €', 'Lujo')" class="gold-button w-full py-3 rounded-lg flex items-center justify-center space-x-2">
+                            <svg class="lock-icon" viewBox="0 0 20 20">
+                                <path d="M10 2a5 5 0 00-5 5v2a2 2 0 00-2 2v5a2 2 0 002 2h10a2 2 0 002-2v-5a2 2 0 00-2-2V7a5 5 0 00-5-5zM7 8a3 3 0 016 0v5a3 3 0 01-6 0V8z" />
+                            </svg>
+                            <span>Desbloquear por €10,90</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="nosotros" class="py-20 px-4 md:px-8 bg-dark-blue">
+        <div class="container mx-auto max-w-5xl text-center">
+            <h2 class="section-title text-4xl font-bold text-gold mb-6">Sobre Capital Select</h2>
+            <p class="text-xl text-gray-300 mb-8">
+                gestión y comercialización de viviendas de embargo y propiedades de lujo. 
+                Nuestra misión es ofrecer oportunidades únicas a inversores y compradores particulares con total transparencia y seguridad.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-10 mt-12">
+                <div class="bg-mid-blue p-8 rounded-xl border border-gold/20">
+                    <div class="text-gold text-4xl mb-4">
+                        <i class="fas fa-handshake"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-3">Confianza y Transparencia</h3>
+                    <p class="text-gray-300">
+                        Trabajamos con entidades financieras y administraciones públicas para ofrecer propiedades verificadas y con documentación completa.
+                    </p>
+                </div>
+                <div class="bg-mid-blue p-8 rounded-xl border border-gold/20">
+                    <div class="text-gold text-4xl mb-4">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-3">Exclusividad</h3>
+                    <p class="text-gray-300">
+                        Accede a propiedades únicas , con descuentos significativos respecto al valor de mercado.
+                    </p>
+                </div>
+                <div class="bg-mid-blue p-8 rounded-xl border border-gold/20">
+                    <div class="text-gold text-4xl mb-4">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-3">Seguridad Jurídica</h3>
+                    <p class="text-gray-300">
+                        Todas nuestras propiedades cuentan con informes jurídicos completos y están libres de cargas ocultas o problemas legales.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contacto" class="py-20 px-4 md:px-8 bg-mid-blue">
+        <div class="container mx-auto max-w-5xl">
+            <h2 class="section-title text-4xl font-bold text-center text-gold mb-6">Contacto</h2>
+            <p class="text-center text-xl text-gray-300 max-w-3xl mx-auto mb-12">
+                ¿Tienes alguna pregunta? Ponte en contacto con nuestro equipo 
+            </p>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                <div>
+                    <div class="bg-dark-blue rounded-xl p-8 border border-gold/20 mb-6">
+                        <h3 class="text-2xl font-bold mb-4 flex items-center">
+                            <i class="fas fa-map-marker-alt text-gold mr-3"></i>
+                            Nuestra Oficina
+                        </h3>
+                        <p class="text-gray-300">
+                            San Vicente del Raspeig <br>
+                            03690 Alicante, España<br>
+                            <span class="mt-2 inline-block">Teléfono: +34 910 000 000</span><br>
+                            <span>Email: pisos.de.embargos2020@gmail.com </span>
+                        </p>
+                    </div>
+                    
+                    <div class="bg-dark-blue rounded-xl p-8 border border-gold/20">
+                        <h3 class="text-2xl font-bold mb-4 flex items-center">
+                            <i class="fas fa-clock text-gold mr-3"></i>
+                            Horario de Atención
+                        </h3>
+                        <p class="text-gray-300">
+                            Lunes a Viernes: 9:00 - 19:00<br>
+                            Sábado: 10:00 - 14:00<br>
+                            Domingo: Cerrado
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="bg-dark-blue rounded-xl p-8 border border-gold/20">
+                    <form id="contactForm" class="space-y-6">
+                        <div>
+                            <label class="block text-gray-300 mb-2">Nombre completo</label>
+                            <input type="text" class="w-full bg-mid-blue border border-gold/30 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gold" required>
+                        </div>
+                        <div>
+                            <label class="block text-gray-300 mb-2">Email</label>
+                            <input type="email" class="w-full bg-mid-blue border border-gold/30 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gold" required>
+                        </div>
+                        <div>
+                            <label class="block text-gray-300 mb-2">Teléfono</label>
+                            <input type="tel" class="w-full bg-mid-blue border border-gold/30 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gold">
+                        </div>
+                        <div>
+                            <label class="block text-gray-300 mb-2">Mensaje</label>
+                            <textarea class="w-full bg-mid-blue border border-gold/30 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gold h-32" required></textarea>
+                        </div>
+                        <button type="submit" class="gold-button w-full py-3 rounded-lg font-bold text-lg">
+                            Enviar Mensaje
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer-bg py-12 px-4 md:px-8 border-t border-gold/20">
+        <div class="container mx-auto max-w-7xl">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <div class="logo-container mb-4">
+                        <div class="bg-gradient-to-r from-gold to-light-gold text-dark-blue font-bold text-xl px-3 py-1 rounded-lg shadow-lg">
+                            CAPITAL SELECT
+                        </div>
+                    </div>
+                    <p class="text-gray-400 mb-4">
+                        Especialistas en viviendas de embargo y propiedades de lujo con las mejores oportunidades del mercado inmobiliario español.
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gold hover:text-light-gold transition-colors">
+                            <i class="fab fa-facebook-f text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gold hover:text-light-gold transition-colors">
+                            <i class="fab fa-twitter text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gold hover:text-light-gold transition-colors">
+                            <i class="fab fa-instagram text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gold hover:text-light-gold transition-colors">
+                            <i class="fab fa-linkedin-in text-xl"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="text-xl font-bold text-gold mb-4">Enlaces Rápidos</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#inicio" class="text-gray-400 hover:text-gold transition-colors">Inicio</a></li>
+                        <li><a href="#embargo" class="text-gray-400 hover:text-gold transition-colors">Viviendas de Embargo</a></li>
+                        <li><a href="#lujo" class="text-gray-400 hover:text-gold transition-colors">Viviendas de Lujo</a></li>
+                        <li><a href="#nosotros" class="text-gray-400 hover:text-gold transition-colors">Sobre Nosotros</a></li>
+                        <li><a href="#contacto" class="text-gray-400 hover:text-gold transition-colors">Contacto</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-xl font-bold text-gold mb-4">Propiedades Destacadas</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-gold transition-colors flex items-center">
+                            <i class="fas fa-lock text-xs mr-2"></i> Madrid Centro - 28.500 €
+                        </a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-gold transition-colors flex items-center">
+                            <i class="fas fa-lock text-xs mr-2"></i> Marbella Puerto - 2.500.000 €
+                        </a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-gold transition-colors flex items-center">
+                            <i class="fas fa-lock text-xs mr-2"></i> Barcelona Eixample - 1.800.000 €
+                        </a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-gold transition-colors flex items-center">
+                            <i class="fas fa-lock text-xs mr-2"></i> Ibiza Cala Llonga - 3.200.000 €
+                        </a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-xl font-bold text-gold mb-4">Newsletter</h3>
+                    <p class="text-gray-400 mb-4">
+                        Suscríbete para recibir las últimas oportunidades inmobiliarias exclusivas.
+                    </p>
+                    <div class="flex">
+                        <input type="email" placeholder="Tu email" class="bg-dark-blue border border-gold/30 rounded-l-lg px-4 py-2 w-full focus:outline-none">
+                        <button class="bg-gold text-dark-blue px-4 rounded-r-lg hover:bg-light-gold transition-colors">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="border-t border-gold/20 mt-12 pt-8 text-center text-gray-500">
+                <p>&copy; 2026 Capital Select. Todos los derechos reservados.</p>
+                <div class="mt-2 flex justify-center space-x-6">
+                    <a href="#" class="hover:text-gold transition-colors">Aviso Legal</a>
+                    <a href="#" class="hover:text-gold transition-colors">Política de Privacidad</a>
+                    <a href="#" class="hover:text-gold transition-colors">Términos y Condiciones</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Payment Modal -->
+    <div id="paymentModal" class="modal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closePaymentModal()">
+                <i class="fas fa-times"></i>
+            </button>
+            <div id="paymentContent">
+                <h3 class="text-2xl font-bold text-gold mb-2 text-center">Desbloquear Propiedad</h3>
+                <p class="text-center text-gray-300 mb-6">Pago único de <span class="text-2xl text-gold font-bold">€10,90</span> para acceder a todos los detalles</p>
+                
+                <div class="bg-dark-blue border border-gold/30 rounded-lg p-4 mb-6">
+                    <p class="font-bold mb-2">Propiedad seleccionada:</p>
+                    <p id="propertyName" class="text-lg">Nombre de la propiedad</p>
+                    <p id="propertyPrice" class="text-gold font-bold text-xl">Precio</p>
+                    <p id="propertyType" class="text-gray-400 mt-1">Tipo de propiedad</p>
+                </div>
+                
+                <div class="mb-6">
+                    <label class="block text-gray-300 mb-2">Email para recibir los detalles</label>
+                    <input type="email" id="userEmail" class="w-full bg-dark-blue border border-gold/30 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gold" placeholder="tu@email.com" required>
+                </div>
+                
+                <button id="stripeButton" class="gold-button w-full py-4 rounded-lg font-bold text-lg flex items-center justify-center space-x-3">
+                    <i class="fab fa-cc-stripe text-2xl"></i>
+                    <span>Pagar con Stripe - €10,90</span>
+                </button>
+                
+                <p class="text-center text-gray-500 mt-4 text-sm">
+                    <i class="fas fa-lock text-gold mr-1"></i> Pago seguro con encriptación SSL. Los detalles se enviarán a tu email tras el pago.
+                </p>
+            </div>
+            
+            <div id="paymentSuccess" class="payment-success">
+                <i class="fas fa-check-circle"></i>
+                <h3 class="text-2xl font-bold text-gold mb-2">¡Pago Exitoso!</h3>
+                <p class="text-gray-300 mb-4">
+                    Hemos enviado los detalles completos de la propiedad a tu correo electrónico.
+                </p>
+                <p class="text-gray-400 mb-6">
+                    Revisa tu bandeja de entrada (y spam) en los próximos minutos.
+                </p>
+                <button onclick="closePaymentModal()" class="gold-button px-6 py-3 rounded-lg font-bold">
+                    Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentProperty = {
+            name: '',
+            price: '',
+            type: ''
+        };
+        
+        function openPaymentModal(name, price, type) {
+            currentProperty = { name, price, type };
+            document.getElementById('propertyName').textContent = name;
+            document.getElementById('propertyPrice').textContent = price;
+            document.getElementById('propertyType').textContent = type === 'Embargo' ? 'Vivienda de Embargo' : 'Vivienda de Lujo';
+            document.getElementById('paymentModal').style.display = 'flex';
+            document.getElementById('paymentContent').style.display = 'block';
+            document.getElementById('paymentSuccess').style.display = 'none';
+            document.getElementById('userEmail').value = '';
+        }
+        
+        function closePaymentModal() {
+            document.getElementById('paymentModal').style.display = 'none';
+        }
+        
+        document.getElementById('stripeButton').addEventListener('click', function() {
+            const email = document.getElementById('userEmail').value;
+            if (!email || !email.includes('@')) {
+                alert('Por favor, introduce un email válido');
+                return;
+            }
+            
+            // Simulate payment processing
+            document.getElementById('paymentContent').style.display = 'none';
+            document.getElementById('paymentSuccess').style.display = 'block';
+            
+            // In a real application, this is where you would integrate with Stripe
+            console.log('Processing payment for:', currentProperty);
+            console.log('Email:', email);
+            
+            // After 5 seconds, close the modal automatically
+            setTimeout(closePaymentModal, 5000);
+        });
+        
+        // Close modal when clicking outside
+        document.getElementById('paymentModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closePaymentModal();
+            }
+        });
+        
+        // Form submission
+        document.getElementById('contactForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('¡Gracias por contactar con nosotros! Hemos recibido tu mensaje y nos pondremos en contacto contigo pronto.');
+            this.reset();
+        });
+        
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                if(targetId === '#') return;
+                
+                const targetElement = document.querySelector(targetId);
+                if(targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                    
+                    // Close mobile menu if open
+                    const mobileMenu = document.querySelector('.mobile-menu');
+                    if(mobileMenu && mobileMenu.classList.contains('active')) {
+                        mobileMenu.classList.remove('active');
+                    }
+                }
+            });
+        });
+        
+        // Close modal when pressing Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && document.getElementById('paymentModal').style.display === 'flex') {
+                closePaymentModal();
+            }
+        });
+    </script>
+</body>
+</html>
+
